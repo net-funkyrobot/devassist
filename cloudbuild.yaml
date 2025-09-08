@@ -1,0 +1,46 @@
+steps:
+
+# Deploy Ollama image to Cloud Run
+- id: deploy-ollama-image
+  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - 'run'
+  - 'deploy'
+  - 'devassist'
+  - '--image'
+  - 'ollama/ollama:0.11.9'
+  - '--region'
+  - 'europe-west1'
+  - '--concurrency=4'
+  - '--cpu=4'
+  - '--gpu=1'
+  - '--gpu-type=nvidia-l4'
+  - '--max-instances=1'
+  - '--memory=16Gi'
+  - '--service-account=runtime@$PROJECT_ID.iam.gserviceaccount.com'
+  - '--no-allow-unauthenticated'
+  - '--no-cpu-throttling'
+  - '--timeout=600'
+  - '--add-volume'
+  - '"name=models,type=cloud-storage,bucket=$PROJECT_ID-models"'
+  - '--add-volume-mount'
+  - '"volume=models,mount-path=/root/.ollama"'
+  
+  # Ollama config
+  - '--set-env-vars'
+  - '"OLLAMA_NUM_PARALLEL=4"'
+  - '--set-env-vars'
+  - '"OLLAMA_MODELS=/root/.ollama/models"'
+  - '--set-env-vars'
+  - '"OLLAMA_HOST=0.0.0.0:8080"'
+  - '--set-env-vars'
+  - '"OLLAMA_DEBUG=false"'
+  - '--set-env-vars'
+  - '"OLLAMA_KEEP_ALIVE=-1"'
+  - '--set-env-vars'
+  - '"MODEL=codestral:22b"'
+
+
+options:
+  logging: CLOUD_LOGGING_ONLY

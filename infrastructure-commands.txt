@@ -1,0 +1,51 @@
+# CREATE GOOGLE CLOUD PROJECT
+gcloud projects create $GOOGLE_CLOUD_PROJECT --organization $INFRA_ORG
+
+# Set default gcloud project for all subsequent commands
+gcloud auth application-default set-quota-project $GOOGLE_CLOUD_PROJECT
+gcloud config set project $GOOGLE_CLOUD_PROJECT
+
+# Link the project's billing to our organization's billing account
+gcloud billing projects link $GOOGLE_CLOUD_PROJECT \
+    --billing-account $INFRA_BILLING_ID
+
+
+# ENABLE APIs
+gcloud services enable \
+    run.googleapis.com \
+    cloudbuild.googleapis.com
+
+
+# IAM ROLES
+# Least required IAM role permissions on new, separate service accounts
+# Build roles
+gcloud iam service-accounts create builder --display-name "App build, least-privileged"
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+    --member=serviceAccount:builder@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+    --role=roles/cloudbuild.builds.builder
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+    --member=serviceAccount:builder@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+    --role=roles/run.admin
+
+# Runtime roles
+gcloud iam service-accounts create runtime --display-name "App runtime, least-privileged"
+
+# Allow builder service account to use the runtime service account to deploy services
+gcloud iam service-accounts add-iam-policy-binding runtime@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+    --member=serviceAccount:builder@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+    --role=roles/iam.serviceAccountUser
+
+
+# CLOUD STORAGE BUCKETS
+gcloud storage buckets create gs://$GOOGLE_CLOUD_PROJECT-models \
+    --location=$INFRA_REGION
+gcloud storage buckets add-iam-policy-binding gs://$GOOGLE_CLOUD_PROJECT-models \
+    --member=serviceAccount:runtime@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com \
+    --role="roles/storage.objectAdmin"
+
+
+# FIRST DEPLOYMENT
+gcloud beta builds submit . \
+    --region=$INFRA_BUILD_REGION \
+    --config=cloudbuild.yaml \
+    --service-account=projects/$GOOGLE_CLOUD_PROJECT/serviceAccounts/builder@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com

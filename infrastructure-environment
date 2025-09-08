@@ -1,0 +1,8 @@
+# SET AND VERIFY THESE VALUES BEFORE RUNNING THIS SCRIPT
+export INFRA_BILLING_ID=''  # Google Cloud billing account ID
+export INFRA_ORG=''  # Google Cloud organization ID
+export INFRA_PROJECT_NAME='devassist'
+export INFRA_REGION='europe-west1'  # EU Cloud Run GPUs are only supported in europe-west1 (Belgium) and europe-west4 (Netherlands)
+export INFRA_BUILD_REGION='europe-west1'  # Wider Cloud Build support in Belgium
+
+export GOOGLE_CLOUD_PROJECT="funkyrobot-${INFRA_PROJECT_NAME}"
