@@ -1,4 +1,4 @@
-# Devassist – Self hosted Mistral AI codestral coding model service
+# Devassist – Self hosted coding model service
 
 Uses Ollama and Google Cloud Run to create a serverless coding model service that scales to zero when not being used. The service can be integrated into Cursor (or other tools that support custom OpenAI base URLs) and used in place of OpenAI.
 
