@@ -29,5 +29,5 @@ Run commands one by one to avoid race-conditions. Ensure you read and acknowledg
 This allows your machine to access the service through a tunnel, authenticated with your GCloud CLI credentials. This approach means only you can access your private service and negates the need to secure the service on the internet.
 
 ```
-gcloud run services proxy funkyrobot-devassist --port=[desired-port] --region {runtime-region}
+gcloud run services proxy funkyrobot-devassist --port=[desired-port] --region [runtime-region]
 ```
