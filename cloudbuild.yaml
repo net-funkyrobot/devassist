@@ -1,7 +1,21 @@
+substitutions:
+  _IMAGE_TAG: "1"
+
+
 steps:
 
+# Build the CI container image from the first build stage
+- id: build-ollama-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/ollama:${_IMAGE_TAG}', '.']
+
+# Push the container image to Container Registry
+- id: push-ollama-image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/ollama:${_IMAGE_TAG}']
+
 # Deploy Ollama image to Cloud Run
-- id: deploy-ollama-image
+- id: deploy-ollama-image-as-service
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
@@ -9,37 +23,26 @@ steps:
   - 'deploy'
   - 'devassist'
   - '--image'
-  - 'ollama/ollama:0.11.9'
+  - 'gcr.io/$PROJECT_ID/ollama:${_IMAGE_TAG}'
   - '--region'
   - 'europe-west1'
   - '--concurrency=4'
+  - '--set-env-vars'
+  - 'OLLAMA_NUM_PARALLEL=4'
   - '--cpu=4'
   - '--gpu=1'
   - '--gpu-type=nvidia-l4'
+  - '--no-gpu-zonal-redundancy'
   - '--max-instances=1'
   - '--memory=16Gi'
   - '--service-account=runtime@$PROJECT_ID.iam.gserviceaccount.com'
   - '--no-allow-unauthenticated'
   - '--no-cpu-throttling'
   - '--timeout=600'
-  - '--add-volume'
-  - '"name=models,type=cloud-storage,bucket=$PROJECT_ID-models"'
-  - '--add-volume-mount'
-  - '"volume=models,mount-path=/root/.ollama"'
-  
-  # Ollama config
-  - '--set-env-vars'
-  - '"OLLAMA_NUM_PARALLEL=4"'
-  - '--set-env-vars'
-  - '"OLLAMA_MODELS=/root/.ollama/models"'
-  - '--set-env-vars'
-  - '"OLLAMA_HOST=0.0.0.0:8080"'
-  - '--set-env-vars'
-  - '"OLLAMA_DEBUG=false"'
-  - '--set-env-vars'
-  - '"OLLAMA_KEEP_ALIVE=-1"'
-  - '--set-env-vars'
-  - '"MODEL=codestral:22b"'
+
+
+images:
+- 'gcr.io/$PROJECT_ID/ollama:${_IMAGE_TAG}'
 
 
 options:
