@@ -1,6 +1,11 @@
 # Devassist – Self hosted coding model service
 
-Uses Ollama and Google Cloud Run to create a serverless coding model service that scales to zero when not being used. The service can be integrated into Cursor (or other tools that support custom OpenAI base URLs) and used in place of OpenAI.
+Uses Ollama and Google Cloud Run to create a serverless coding model service that scales to zero when not being used. The service can be integrated into code assistant agents like [Continue.dev](https://www.continue.dev/) in VSCode and Jetbrains IDEs. This will also work for any other tools that support either local Ollama endpoints OR custom OpenAI base URLs.
+
+With Continue.dev, you don't need to sign into an account or use their cloud features to use your own OpenAI/Google/Anthropic API keys OR use Ollama locally (via the GCloud Run proxy).
+
+This means all of your codebase, data and any prompts you submit stay inside your own private cloud infrastructure. None of your data is used for other purposes, such as training future models.
+
 
 ## Requirements
 
@@ -29,5 +34,28 @@ Run commands one by one to avoid race-conditions. Ensure you read and acknowledg
 This allows your machine to access the service through a tunnel, authenticated with your GCloud CLI credentials. This approach means only you can access your private service and negates the need to secure the service on the internet.
 
 ```
-gcloud run services proxy funkyrobot-devassist --port=[desired-port] --region [runtime-region]
+gcloud run services proxy funkyrobot-devassist --port=11434 --region [runtime-region]
 ```
+
+## Inspect StackDriver logs to monitor pulling of model weights
+
+The container image uses an entrypoint script that pulls the weights for a model if they haven't been downloaded already.
+
+This process takes time. You can monitor the progress through StackDriver logging:
+
+https://console.cloud.google.com/logs/query
+
+If it any point the Cloud Run instance terminates, it's likley because Cloud Run failed to establish a connection to the container within it's own timeout while Ollama was busy pulling model weights.
+
+If this happens just load the proxy URL in a browser to start the service again.
+
+## Use OpenWebUI to verify the model has loaded
+
+To play around with the model before configuring it in an editor, you can use the OpenWebUI Docker image:
+
+```
+docker run --rm -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main
+```
+
+This will connect up to Ollama locally on Ollama's default port of 11434, which is currently being proxied to the Cloud Run app.
+
