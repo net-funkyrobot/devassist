@@ -1,8 +1,12 @@
 # Devassist – Self hosted coding model service
 
-Uses Ollama and Google Cloud Run to create a serverless coding model service that scales to zero when not being used. The service can be integrated into code assistant agents like [Continue.dev](https://www.continue.dev/) in VSCode and Jetbrains IDEs. This will also work for any other tools that support either local Ollama endpoints OR custom OpenAI base URLs.
+Uses [Ollama](https://ollama.com/) and [Google Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run) to create a serverless coding model service that scales to zero when not being used. The service can be integrated into code assistant agents like [Continue.dev](https://www.continue.dev/) in VSCode and Jetbrains IDEs. This will also work for any other tools that support either local Ollama endpoints OR custom OpenAI base URLs.
 
-With Continue.dev, you don't need to sign into an account or use their cloud features to use your own OpenAI/Google/Anthropic API keys OR use Ollama locally (via the GCloud Run proxy).
+Ollama pulls [Mistral AI](https://mistral.ai/)'s [Codestral](https://ollama.com/library/codestral) open-weights code generation model.
+
+The model can complete coding functions, write tests, and complete any partial code using a fill-in-the-middle mechanism.
+
+Using Continue.dev, you don't need to sign into an account or use their cloud features to use your own OpenAI/Google/Anthropic API keys OR use Ollama locally (via the GCloud Run proxy).
 
 This means all of your codebase, data and any prompts you submit stay inside your own private cloud infrastructure. None of your data is used for other purposes, such as training future models.
 
